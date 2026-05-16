@@ -5,7 +5,7 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-model = load_model("gru_model.keras")
+model = load_model("gru_model.h5")
 with open("tokenizer.pkl", "rb") as file:
     tokenizer = pickle.load(file)
 
@@ -70,17 +70,22 @@ if predict_button:
                     padding='post',
                     truncating='post'
                 )
-                prediction = model.predict(padded_sequence)
-                score = prediction[0][0]
+                score = model.predict(padded_sequence)[0][0]
 
                 # --- UI OUTPUT ---
                 st.subheader("🔍 Prediction Result")
-                if score > 0.5:
-                    st.success("😊 Positive Review")
+                
+                if score >= 0.5:
+                    sentiment = "😊 Positive Review"
+                    confidence = score * 100
+                    st.success(sentiment)
                 else:
-                    st.error("😡 Negative Review")
-                st.write(f"**Confidence Score:** {score:.4f}")
-
+                    sentiment = "😡 Negative Review"
+                    confidence = (1 - score) * 100
+                    st.error(sentiment)
+                
+                st.write(f"**Confidence Score:** {confidence:.2f}%")
+                
                 st.subheader("📊 Confidence Level")
-
-                st.progress(float(score))
+                
+                st.progress(float(confidence / 100))
